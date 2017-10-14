@@ -1,0 +1,1 @@
+This sketch uses analog read for player position.
