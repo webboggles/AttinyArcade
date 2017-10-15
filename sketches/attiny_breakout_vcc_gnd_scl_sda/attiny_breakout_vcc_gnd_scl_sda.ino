@@ -16,6 +16,48 @@
 #include <avr/sleep.h>
 #include <avr/interrupt.h> // needed for the additional interrupt
 
+#define DIGITAL_WRITE_HIGH(PORT) PORTB |= (1 << PORT)
+#define DIGITAL_WRITE_LOW(PORT) PORTB &= ~(1 << PORT)
+
+// Some code based on "IIC_wtihout_ACK" by http://www.14blog.com/archives/1358
+#ifndef SSD1306XLED_H
+#define SSD1306XLED_H
+// ---------------------	// Vcc,	Pin 1 on SSD1306 Board
+// ---------------------	// GND,	Pin 2 on SSD1306 Board
+#ifndef SSD1306_SCL
+#define SSD1306_SCL		PB4	// SCL,	Pin 3 on SSD1306 Board
+#endif
+#ifndef SSD1306_SDA
+#define SSD1306_SDA		PB3	// SDA,	Pin 4 on SSD1306 Board
+#endif
+#ifndef SSD1306_SA
+#define SSD1306_SA		0x78	// Slave address
+#endif
+// ----------------------------------------------------------------------------
+void ssd1306_init(void);
+void ssd1306_xfer_start(void);
+void ssd1306_xfer_stop(void);
+void ssd1306_send_byte(uint8_t byte);
+void ssd1306_send_command(uint8_t command);
+void ssd1306_send_data_start(void);
+void ssd1306_send_data_stop(void);
+void ssd1306_setpos(uint8_t x, uint8_t y);
+void ssd1306_fillscreen(uint8_t fill_Data);
+void ssd1306_char_f6x8(uint8_t x, uint8_t y, const char ch[]);
+//void ssd1306_char_f8x16(uint8_t x, uint8_t y,const char ch[]);
+//void ssd1306_char_f16x16(uint8_t x, uint8_t y, uint8_t N);
+void ssd1306_draw_bmp(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t bitmap[]);
+// ----------------------------------------------------------------------------
+#endif
+
+// Routines to set and clear bits (used in the sleep code)
+#ifndef cbi
+#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+#endif
+#ifndef sbi
+#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#endif
+
 volatile byte player = 0; //0 to 128-platformWidth  - this is the position of the bounce platform
 byte platformWidth = 16; 
 byte ballx = 62; // coordinate of the ball
@@ -279,39 +321,7 @@ void sendBlock(boolean fill){
 void beep(int bCount,int bDelay){
   for (int i = 0; i<=bCount; i++){digitalWrite(1,HIGH);for(int i2=0; i2<bDelay; i2++){__asm__("nop\n\t");}digitalWrite(1,LOW);for(int i2=0; i2<bDelay; i2++){__asm__("nop\n\t");}}
 }
-#define DIGITAL_WRITE_HIGH(PORT) PORTB |= (1 << PORT)
-#define DIGITAL_WRITE_LOW(PORT) PORTB &= ~(1 << PORT)
 
-// Some code based on "IIC_wtihout_ACK" by http://www.14blog.com/archives/1358
-#ifndef SSD1306XLED_H
-#define SSD1306XLED_H
-// ---------------------	// Vcc,	Pin 1 on SSD1306 Board
-// ---------------------	// GND,	Pin 2 on SSD1306 Board
-#ifndef SSD1306_SCL
-#define SSD1306_SCL		PB4	// SCL,	Pin 3 on SSD1306 Board
-#endif
-#ifndef SSD1306_SDA
-#define SSD1306_SDA		PB3	// SDA,	Pin 4 on SSD1306 Board
-#endif
-#ifndef SSD1306_SA
-#define SSD1306_SA		0x78	// Slave address
-#endif
-// ----------------------------------------------------------------------------
-void ssd1306_init(void);
-void ssd1306_xfer_start(void);
-void ssd1306_xfer_stop(void);
-void ssd1306_send_byte(uint8_t byte);
-void ssd1306_send_command(uint8_t command);
-void ssd1306_send_data_start(void);
-void ssd1306_send_data_stop(void);
-void ssd1306_setpos(uint8_t x, uint8_t y);
-void ssd1306_fillscreen(uint8_t fill_Data);
-void ssd1306_char_f6x8(uint8_t x, uint8_t y, const char ch[]);
-//void ssd1306_char_f8x16(uint8_t x, uint8_t y,const char ch[]);
-//void ssd1306_char_f16x16(uint8_t x, uint8_t y, uint8_t N);
-void ssd1306_draw_bmp(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t bitmap[]);
-// ----------------------------------------------------------------------------
-#endif
 void ssd1306_init(void){
 	DDRB |= (1 << SSD1306_SDA);	// Set port as output
 	DDRB |= (1 << SSD1306_SCL);	// Set port as output
@@ -446,13 +456,7 @@ void ssd1306_char_f6x8(uint8_t x, uint8_t y, const char ch[]){
 	}
 }
 
-// Routines to set and clear bits (used in the sleep code)
-#ifndef cbi
-#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
-#endif
-#ifndef sbi
-#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
-#endif
+
 
 void system_sleep() {
   ssd1306_fillscreen(0x00);
