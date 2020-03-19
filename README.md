@@ -1,6 +1,10 @@
 # AttinyArcade
 Attiny85 based Arduino compatible keychain game platform
 ================================================================
+UPDATE 19 MARCH 2020:
+Added sketch for temperature monitor with Dallas TO92 sensor. 4.6K resistor required between V and DATA.
+
+------------------------------------------
 
 Project page: http://webboggles.com/attiny85-game-kit-assembly-instructions/
 Community photos and updates: https://twitter.com/hashtag/AttinyArcade
